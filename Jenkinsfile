@@ -3,28 +3,28 @@ pipeline
   agent any
   stages
   { 
-      stage("ContinousDownload")
+      stage('ContinousDownload_Master')
     {
         steps
         {
            git 'https://github.com/IntelliqDevops/maven.git'  
         }
      }
-     stage("ContinousBuild")
+     stage('ContinousBuild_Master')
      {
          steps
          {
              sh 'mvn package'
          }
      }
-     stage('ContinousDeployment')
+     stage('ContinousDeployment_Master')
      {
          steps
          {
               sh'scp /var/lib/jenkins/workspace/DeclarativePipeline1/webapp/target/webapp.war ubuntu@172.31.29.234:/var/lib/tomcat10/webapps/testapp.war'
          }
      }
-     stage('ContinousTesting')
+     stage('ContinousTesting_Master')
      {
         steps
        {
@@ -32,7 +32,7 @@ pipeline
            sh 'java -jar /var/lib/jenkins/workspace/DeclarativePipeline1/testing.jar'
        }    
      }
-     stage('ContinousDelivery')
+     stage('ContinousDelivery_Master')
      {
          steps
          {
@@ -40,4 +40,4 @@ pipeline
          }
      }
    }
- }
+  }
