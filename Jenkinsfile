@@ -1,43 +1,65 @@
+
+
+
+
+@Library('mylibrary')_
+
 pipeline
 {
-  agent any
-  stages
-  { 
-      stage('ContinousDownload_Master')
+    agent any
+    stages
     {
-        steps
+        stage('Download_Master')
         {
-           git 'https://github.com/IntelliqDevops/maven.git'  
+            steps
+            {
+                script
+                {
+                    cicd.gitDownload('maven2')
+                }
+            }
         }
-     }
-     stage('ContinousBuild_Master')
-     {
-         steps
-         {
-             sh 'mvn package'
-         }
-     }
-     stage('ContinousDeployment_Master')
-     {
-         steps
-         {
-              sh'scp /var/lib/jenkins/workspace/DeclarativePipeline1/webapp/target/webapp.war ubuntu@172.31.29.234:/var/lib/tomcat10/webapps/testapp.war'
-         }
-     }
-     stage('ContinousTesting_Master')
-     {
-        steps
-       {
-          git'https://github.com/IntelliqDevops/FunctionalTesting.git'
-           sh 'java -jar /var/lib/jenkins/workspace/DeclarativePipeline1/testing.jar'
-       }    
-     }
-     stage('ContinousDelivery_Master')
-     {
-         steps
-         {
-             sh 'scp /var/lib/jenkins/workspace/DeclarativePipeline1/webapp/target/webapp.war ubuntu@172.31.19.221:/var/lib/tomcat10/webapps/prodapp.war'
-         }
-     }
-   }
-  }
+        stage ('Build_Master')
+        {
+            steps
+            {
+               script
+               {
+                cicd.buildArtifact()
+                }
+            }
+        }
+        stage('Deployment_Master')
+        {
+            steps
+            {
+                script
+                {
+                    cicd.deployTomcat("DeclarativepipelineWithSharedlibraries","172.31.29.234","testapp")
+                }
+            }
+        }
+
+        stage('Testing_Master')
+        {
+            steps
+            {
+                script
+                {
+                    cicd.gitDownload("FunctionalTesting")
+                    cicd.runSelenium("DeclarativepipelineWithSharedlibraries")
+                }
+            }
+        }
+        stage('Delivery_Mater')
+        {
+            steps
+            {
+                script
+                {
+                    cicd.deployTomcat("DeclarativepipelineWithSharedlibraries","172.31.19.221","prodapp")
+                }
+            }
+        }
+    }
+}
